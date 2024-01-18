@@ -2,9 +2,9 @@
 
 Web scraper powered by Express.js and Puppeteer, which launches a Chrome instance in which the Wiimmfi.de website can be accessed for extracting and sending the list of online Mario Kart DS players in JSON format.
 
-The server can work locally with Node by running `node .` after installing the necessary packages using `npm install`. It will be accessible on `localhost:8080` by default. 
+The server can be hosted locally with Node by running `node .` after installing the necessary packages using `npm install`. It will be accessible on `localhost:8080` by default. 
 
-The API is currently hosted on GCP Cloud Run for use by the dashboard app : [https://mkds-wiimmfi-dashboard-api-xmsmvtoega-nn.a.run.app](https://mkds-wiimmfi-api-xmsmvtoega-ul.a.run.app)
+The API is currently hosted on GCP Cloud Run for use by the dashboard app : https://mkds-wiimmfi-api-xmsmvtoega-ul.a.run.app
 
 The dashboard app makes use of the API by automatically sending requests without requiring the user to constantly refresh the page like on the Wiimmfi website.
 
