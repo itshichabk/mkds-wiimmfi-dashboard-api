@@ -18,7 +18,7 @@ class Player
 }
 
 app.use(cors());
-app.listen(8080, () => console.log("MKDS online fetcher active: http://localhost:8080"));
+app.listen(8080, () => console.log("Server active on port 8080 : http://localhost:8080 (local)"));
 
 console.log('Setting global variables...')
 
@@ -32,6 +32,7 @@ let fetchedPlayers;
 
     const browser = await puppeteer.launch({
         headless: false,
+        timeout: 0,
         args: ['--no-sandbox'],
         targetFilter: (target) => !!target.url()});
     console.log("Browser launched, initializing page");
