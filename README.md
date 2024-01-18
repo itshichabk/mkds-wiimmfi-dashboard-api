@@ -4,7 +4,7 @@ Web scraper powered by Express.js and Puppeteer, which launches a Chrome instanc
 
 The server can work locally with Node by running `node .` after installing the necessary packages using `npm install`. It will be accessible on `localhost:8080` by default. 
 
-The API is currently hosted on Render for use by the dashboard app : https://mkds-wiimmfi-stats-api.onrender.com
+The API is currently hosted on GCP Cloud Run for use by the dashboard app : https://mkds-wiimmfi-dashboard-api-xmsmvtoega-nn.a.run.app
 
 The dashboard app makes use of the API by automatically sending requests without requiring the user to constantly refresh the page like on the Wiimmfi website.
 
@@ -24,4 +24,4 @@ The dashboard app makes use of the API by automatically sending requests without
 
 A headful instance + Xvfb had to be used instead of a headless one because the latter has issues with the Cloudflare protection, even using with the Stealth plugin.
 
-The API had to be dockerized before being deployed on Render.com as it required other system dependencies to allow a Chrome window to be launched in the virtual framebuffer provided by Xvfb.
+The API had to be dockerized before being deployed on GCP as it required other system dependencies to allow a Chrome window to be launched in the virtual framebuffer provided by Xvfb.
