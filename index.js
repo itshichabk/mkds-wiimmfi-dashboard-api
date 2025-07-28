@@ -59,7 +59,7 @@ app.get('/', async (req, res) =>
             if(title == "Just a moment...")
             {
                 console.log("Skipping Cloudflare protection...")
-                await page.waitForTimeout(3500);
+                await page.waitForTimeout(5000);
             }
             else
             {
