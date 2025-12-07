@@ -1,6 +1,7 @@
 const app = require('express')();
 const fs = require('node:fs');
-const moment = require('moment')
+
+const moment = require('moment-timezone');
 
 const puppeteer = require('puppeteer-extra')
 const StealthPlugin = require('puppeteer-extra-plugin-stealth')
@@ -27,7 +28,7 @@ function log(message)
 {
     console.log(message);
 
-    let logMessage = moment().format('YYYY-MM-DD hh:mm:ss') + " : " + message + "\n";
+    let logMessage = moment().tz("America/Toronto").format('YYYY-MM-DD HH:mm:ss') + " : " + message + "\n";
 
     fs.appendFile(logFile, logMessage, { flag: 'a+' }, err =>
     {
