@@ -1,11 +1,17 @@
 const app = require('express')();
+const fs = require('node:fs');
+const moment = require('moment')
 
 const puppeteer = require('puppeteer-extra')
 const StealthPlugin = require('puppeteer-extra-plugin-stealth')
 puppeteer.use(StealthPlugin())
+
 const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
+
 const cors = require("cors");
+
+const logFile = "log.txt";
 
 class Player
 {
@@ -17,10 +23,30 @@ class Player
     }
 }
 
-app.use(cors());
-app.listen(8080, () => console.log("Server active on port 8080 : http://localhost:8080 (local)"));
+function log(message)
+{
+    console.log(message);
 
-console.log('Setting global variables...')
+    let logMessage = moment().format('YYYY-MM-DD hh:mm:ss') + " : " + message + "\n";
+
+    fs.appendFile(logFile, logMessage, { flag: 'a+' }, err =>
+    {
+        if (err)
+        {
+            console.error(err);
+        }
+    })
+}
+
+if (fs.existsSync(logFile))
+{
+    fs.unlink(logFile, err => console.log(err) );
+}
+
+app.use(cors());
+app.listen(8080, () => log("Server active on port 8080 : http://localhost:8080 (local)"));
+
+log('Setting global variables...')
 
 let initialized = false;
 let page
@@ -28,18 +54,18 @@ let fetching = false;
 let fetchedPlayers;
 
 (async()=>{
-    console.log('Attempting to launch browser...')
+    log('Attempting to launch browser...')
 
     const browser = await puppeteer.launch({
         headless: false,
         timeout: 0,
         args: ['--no-sandbox'],
         targetFilter: (target) => !!target.url()});
-    console.log("Browser launched, initializing page");
+    log("Browser launched, initializing page");
 
     page = (await browser.pages())[0];
 
-    console.log("Browser and page initialized");
+    log("Browser and page initialized");
     initialized = true;
 })();
 
@@ -47,26 +73,39 @@ app.get('/', async (req, res) =>
 {
     if(initialized && !fetching)
     {
+        let cloudflarePresent = false;
         fetching = true;
-        console.log("Fetching players from the Wiimmfi website...");
+        log("Fetching players from the Wiimmfi website...");
 
         try
         {
+            log("go to wiimmfi.de")
             await page.goto('https://wiimmfi.de/stats/game/mariokartds')
-            await page.waitForNetworkIdle();
 
             const title = await page.title();
             if(title == "Just a moment...")
             {
-                console.log("Skipping Cloudflare protection...")
-                await page.waitForTimeout(5000);
+                cloudflarePresent = true;
+                log("Skipping Cloudflare protection...")
+                await page.waitForNavigation();
             }
             else
             {
-                console.log("Already logged in...")
+                log("Already logged in...")
             }
         
+            if (cloudflarePresent)
+            {
+                await page.waitForNavigation
+                ({
+                    waitUntil: 'networkidle0',
+                });
+            }
+
+            log("awaiting page content");
             const dom = new JSDOM(await page.content());
+
+            log("extracting data");
             const rows = dom.window.document.querySelectorAll("#online .tr0, #online .tr1");
         
             let players = [];
@@ -96,7 +135,6 @@ app.get('/', async (req, res) =>
                 }
         
                 const name = column[10].innerHTML;
-                // todo: codePointAt for special DS characters
         
                 players.push(new Player(fc, status, name));
             }
@@ -104,8 +142,8 @@ app.get('/', async (req, res) =>
             players = players.sort((a, b) => a.name.localeCompare(b.name));
             players = players.sort((a, b) => a.status - b.status);
         
-            console.log("Players fetched!")
-            players.forEach(p => console.log(p));
+            log("Players fetched!")
+            players.forEach(p => log("{ fc: '" + p.fc + "', status: " + p.status + ", name: '" + p.name + "' }"));
             
             fetchedPlayers = JSON.stringify(players);
         
@@ -120,7 +158,7 @@ app.get('/', async (req, res) =>
     }
     else if(initialized)
     {
-        console.log("Server currently fetching, sending latest fetched players.")
+        log("Server currently fetching, sending latest fetched players.")
         res.status(200).send(fetchedPlayers);    
     }
     else
