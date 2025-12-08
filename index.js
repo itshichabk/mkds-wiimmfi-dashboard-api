@@ -13,6 +13,7 @@ const { JSDOM } = jsdom;
 const cors = require("cors");
 
 const logFile = "log.txt";
+const logMaxLines = 1000;
 
 class Player
 {
@@ -29,6 +30,7 @@ function log(message)
     console.log(message);
 
     let logMessage = moment().tz("America/Toronto").format('YYYY-MM-DD HH:mm:ss') + " : " + message + "\n";
+    countLines();
 
     fs.appendFile(logFile, logMessage, { flag: 'a+' }, err =>
     {
@@ -39,10 +41,37 @@ function log(message)
     })
 }
 
-if (fs.existsSync(logFile))
+function checkLogFileLines(count)
 {
-    fs.unlink(logFile, err => console.log(err) );
+    if (count >= logMaxLines)
+    {
+        deleteLogFile();
+    }
 }
+
+function deleteLogFile()
+{
+    if (fs.existsSync(logFile))
+    {
+        fs.unlink(logFile, err => console.log(err) );
+    }
+}
+
+function countLines()
+{
+    // function (mostly) copied from https://gist.github.com/eqperes/342d532d6946f4239b0c09e398505b5a
+    let i;
+    let count = 0;
+
+    fs.createReadStream(logFile)
+        .on('error', e => log(e))
+        .on('data', chunk => {
+            for (i=0; i < chunk.length; ++i) if (chunk[i] == 10) count++;
+        })
+        .on('end', () => checkLogFileLines(count));
+};
+
+deleteLogFile();
 
 app.use(cors());
 app.listen(8080, () => log("Server active on port 8080 : http://localhost:8080 (local)"));
